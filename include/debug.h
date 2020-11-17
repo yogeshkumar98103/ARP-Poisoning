@@ -1,0 +1,1 @@
+#define PRINT_MAC_ADDRESS(mac) printf("%.2X:%.2X:%.2X:%.2X:%.2X:%.2X\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);

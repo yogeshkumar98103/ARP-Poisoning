@@ -1,12 +1,12 @@
 #include <cinttypes>
 #define MAC_ADDRESS_LEN 6
 
-struct MacAddress {
+struct MACAddress {
     uint8_t octets[MAC_ADDRESS_LEN];
 
     // WARNING: Assumes a valid input. No errors are handled here
-    static MacAddress from_str(const char* mac_str){
-        MacAddress address;
+    static MACAddress from_str(const char* mac_str){
+        MACAddress address;
 
         int i = 0;
         for(int idx = 0; idx < MAC_ADDRESS_LEN; ++idx){
