@@ -7,13 +7,14 @@
 #include "ip_address.h"
 #include "buffer_reader.h"
 #include "buffer_writer.h"
+#include "debug.h"
 
 #define ETHERNET_HW_TYPE 1
 #define IPv4_PROTOCOL_TYPE 0x0800
 #define ARP_REQUEST 1
 #define ARP_REPLY   2
 
-#define ARP_PACKET_LEN 224
+#define ARP_PACKET_LEN 28
 
 /// Source:- https://tools.ietf.org/html/rfc6747
 ///
@@ -105,16 +106,32 @@ struct ARPPacket {
     }
 
     int read(uint8_t buffer[]){
-        BufferReader reader(buffer + 6); // skip first 6 bytes
+        BufferReader reader(buffer); // skip first 6 bytes
         return read(reader);
     }
 
     int read(BufferReader& reader){
+        printf("ARP Packet: ");
+        debug_buffer(reader.get_buffer());
+
+        reader.skip(6);
         opcode = reader.take_uint16();
         src_mac_addr.read(reader);
         src_ip_addr.read(reader);
         target_mac_addr.read(reader);
         target_ip_addr.read(reader);
+
+
+        // printf("[INTERNAL] From MAC: ");
+        // print(src_mac_addr);
+        // printf("[INTERNAL] To MAC: ");
+        // print(target_mac_addr);
+        // printf("[INTERNAL] From IP: ");
+        // print(src_ip_addr);
+        // printf("[INTERNAL] To IP: ");
+        // print(target_ip_addr);
+        // printf("[INTERNAL] opcode: %d\n\n", opcode);
+
         return ARP_PACKET_LEN;
     }
 };
