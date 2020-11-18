@@ -15,10 +15,18 @@ inline void print(MACAddress address){
 
 inline void print(IPv4Address address){
     for(int i = 0; i < IP_ADDRESS_LEN - 1; ++i){
-        printf("%02d:", address.octets[i]);
+        printf("%d.", address.octets[i]);
     }
 
-    printf("%02d\n", address.octets[IP_ADDRESS_LEN - 1]);
+    printf("%d\n", address.octets[IP_ADDRESS_LEN - 1]);
+}
+
+
+void debug_buffer(uint8_t buffer[]){
+	for(int i = 0; i < 42; ++i){
+        printf("%.2X", buffer[i]);
+    }
+    printf("\n");
 }
 
 #endif

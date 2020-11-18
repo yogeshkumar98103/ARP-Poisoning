@@ -9,19 +9,19 @@
 
 #define ETHTYPE_ARP 0x0806
 
-#define ETH_HEADER_LEN MAC_ADDRESS_LEN + MAC_ADDRESS_LEN + 16
+#define ETH_HEADER_LEN MAC_ADDRESS_LEN + MAC_ADDRESS_LEN + 2
 
 struct EthernetFrame {
-    MACAddress src_mac_addr;
     MACAddress dst_mac_addr;
+    MACAddress src_mac_addr;
     uint16_t   eth_type; 
 
     EthernetFrame() = default;
 
     EthernetFrame(
-        MACAddress src_mac_addr_, MACAddress dst_mac_addr_, uint16_t eth_type_
-    ):  src_mac_addr(std::move(src_mac_addr)),
-        dst_mac_addr(std::move(dst_mac_addr)),
+        MACAddress dst_mac_addr_, MACAddress src_mac_addr_, uint16_t eth_type_
+    ):  dst_mac_addr(std::move(dst_mac_addr_)),
+        src_mac_addr(std::move(src_mac_addr_)),
         eth_type(eth_type_) 
     {}
 
@@ -37,8 +37,8 @@ struct EthernetFrame {
     }
 
     int write(BufferWriter& writer){
-        src_mac_addr.write(writer);
         dst_mac_addr.write(writer);
+        src_mac_addr.write(writer);
         writer.write_uint16(eth_type);
         return ETH_HEADER_LEN;
     }
@@ -49,8 +49,8 @@ struct EthernetFrame {
     }
 
     int read(BufferReader& reader){
-        src_mac_addr.read(reader);
         dst_mac_addr.read(reader);
+        src_mac_addr.read(reader);
         eth_type = reader.take_uint16();
         return ETH_HEADER_LEN;
     }

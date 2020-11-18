@@ -14,6 +14,10 @@ public:
         return buffer;
     }
 
+    void skip(int skip_len){
+        buffer += skip_len;
+    }
+
     uint8_t read_uint8(){
         return *(buffer);
     }

@@ -5,13 +5,14 @@
 #include "buffer_writer.h"
 
 template <typename payload_t>
-int write(BufferWriter& writer, payload_t head){
-    return head.write(writer);
+int write(BufferWriter& writer, payload_t& head){
+	return head.write(writer);
 }
 
 template <typename payload_t, typename... payload_u>
 int write(BufferWriter& writer, payload_t& head, payload_u&&... tail){
-    return head.write(writer) + write(writer, std::forward<payload_u>(tail)...);
+    int size = head.write(writer);
+    return size + write(writer, std::forward<payload_u>(tail)...);
 }
 
 template <typename... payload_u>
@@ -21,19 +22,20 @@ int write(uint8_t buffer[], payload_u&&... payload){
 }
 
 template <typename payload_t>
-int read(BufferWriter& writer, payload_t head){
-    return head.read(writer);
+int read(BufferReader& reader, payload_t& head){
+    return head.read(reader);
 }
 
 template <typename payload_t, typename... payload_u>
-int read(BufferWriter& writer, payload_t& head, payload_u&&... tail){
-    return head.read(writer) + read(writer, std::forward<payload_u>(tail)...);
+int read(BufferReader& reader, payload_t& head, payload_u&&... tail){
+    int size = head.read(reader);
+    return size + read(reader, std::forward<payload_u>(tail)...);
 }
 
 template <typename... payload_u>
 int read(uint8_t buffer[], payload_u&&... payload){
-    BufferWriter writer(buffer);
-    return read(writer, std::forward<payload_u>(payload)...);
+    BufferReader reader(buffer);
+    return read(reader, std::forward<payload_u>(payload)...);
 }
 
 

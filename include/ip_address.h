@@ -14,17 +14,15 @@ struct IPv4Address {
     static IPv4Address from_str(const char* ip_str){
         IPv4Address address;
 
-        int i = 0;
+        int j = 0;
         for(int idx = 0; idx < IP_ADDRESS_LEN; ++idx){
-            int j = i + 1;
             address.octets[idx] = 0;
             while(!(ip_str[j] == '\0' || ip_str[j] == '.')){
                 address.octets[idx] *= 10;
                 address.octets[idx] += (ip_str[j] - '0');
                 ++j;
             }
-
-            i = j + 1;
+            ++j;
         }
 
         return address;
