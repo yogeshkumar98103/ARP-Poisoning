@@ -10,6 +10,7 @@
 #include <netinet/ip.h>
 #include <net/if.h>
 #include <net/if_arp.h>
+#include <net/ethernet.h>
 #include <unistd.h>
 
 #include "ip_address.h"
