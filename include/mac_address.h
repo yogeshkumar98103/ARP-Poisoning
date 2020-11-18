@@ -57,6 +57,13 @@ struct MACAddress {
             octets[i] = reader.take_uint8();
         }
     }
+
+    bool operator == (const MACAddress& other) const {
+        for(int i = 0; i < MAC_ADDRESS_LEN; ++i){
+            if(octets[i] != other.octets[i]) return false;
+        }
+        return true;
+    }
 };
 
 #endif // __ARPOISON__MAC_ADDRESS

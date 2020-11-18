@@ -7,7 +7,6 @@
 #include "ip_address.h"
 #include "buffer_reader.h"
 #include "buffer_writer.h"
-#include "debug.h"
 
 #define ETHERNET_HW_TYPE 1
 #define IPv4_PROTOCOL_TYPE 0x0800
@@ -111,8 +110,8 @@ struct ARPPacket {
     }
 
     int read(BufferReader& reader){
-        printf("ARP Packet: ");
-        debug_buffer(reader.get_buffer());
+        // printf("ARP Packet: ");
+        // debug_buffer(reader.get_buffer());
 
         reader.skip(6);
         opcode = reader.take_uint16();
