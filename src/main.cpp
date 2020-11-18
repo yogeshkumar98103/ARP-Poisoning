@@ -37,11 +37,11 @@ MACAddress get_hardware_address(int fd, const char* if_name){
     return address;    
 }
 
+
 int main(int argc, char** argv){
     if(argc < 4){
-
         // TODO: Show usage info
-        printf("Expected 5 arguments got %d", argc);
+        printf("Expected 3 arguments got %d", argc);
         return 0;
     }
 
@@ -54,7 +54,7 @@ int main(int argc, char** argv){
     GUARD(fd != -1, "failed to create socket");
 
     MACAddress mac = get_hardware_address(fd, interface);
-    PRINT_MAC_ADDRESS(mac.octets);
+    print(mac);
 
     // close(fd);
 

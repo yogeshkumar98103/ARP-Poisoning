@@ -1,4 +1,10 @@
+#ifndef __ARPOISON__MAC_ADDRESS
+#define __ARPOISON__MAC_ADDRESS
+
 #include <cinttypes>
+#include "buffer_reader.h"
+#include "buffer_writer.h"
+
 #define MAC_ADDRESS_LEN 6
 
 struct MACAddress {
@@ -23,4 +29,24 @@ struct MACAddress {
 
         return address;
     }
+
+    static MACAddress from_reader(BufferReader& reader){
+        MACAddress addr;
+        addr.read(reader);
+        return addr;
+    }
+
+    void write(BufferWriter& writer){
+        for(int i = 0; i < MAC_ADDRESS_LEN; ++i){
+            writer.write_uint8(octets[i]);
+        }
+    }
+
+    void read(BufferReader& reader){
+        for(int i = 0; i < MAC_ADDRESS_LEN; ++i){
+            octets[i] = reader.take_uint8();
+        }
+    }
 };
+
+#endif // __ARPOISON__MAC_ADDRESS
