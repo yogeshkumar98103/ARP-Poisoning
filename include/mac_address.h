@@ -30,6 +30,16 @@ struct MACAddress {
         return address;
     }
 
+    static MACAddress get_broadcast_addr(){
+        static MACAddress broadcast_addr = ([]()->MACAddress{
+            MACAddress addr;
+            memset(addr.octets, -1, sizeof(addr.octets)); // set all 1s
+            return addr;
+        })();
+
+        return broadcast_addr;
+    }
+
     static MACAddress from_reader(BufferReader& reader){
         MACAddress addr;
         addr.read(reader);

@@ -47,6 +47,13 @@ struct IPv4Address {
             octets[i] = reader.take_uint8();
         }
     }
+
+    bool operator == (const IPv4Address& other) const {
+        for(int i = 0; i < IP_ADDRESS_LEN; ++i){
+            if(octets[i] != other.octets[i]) return false;
+        }
+        return true;
+    }
 };
 
 #endif // __ARPOISON__IP_ADDRESS
