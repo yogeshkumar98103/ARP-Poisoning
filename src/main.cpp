@@ -11,10 +11,7 @@
 #include <net/if.h>
 #include <net/if_arp.h>
 #include <net/ethernet.h>
-<<<<<<< HEAD
-=======
 #include <linux/if_packet.h>
->>>>>>> 91cdc83a1732fabb176fe7d5ed9abd806b5fc1e5
 #include <unistd.h>
 
 #include "ip_address.h"
